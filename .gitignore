@@ -21,6 +21,11 @@ vendor/
 # Log files
 *.log
 
+# Logs and temporary files
+*.log
+/tmp/
+
+
 # Build output
 build/
 
