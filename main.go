@@ -15,10 +15,6 @@ import (
 func main() {
 	app := fiber.New()
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
-
 	config.ConnectDB()
 
 	app.Get("/swagger/*", swagger.HandlerDefault)

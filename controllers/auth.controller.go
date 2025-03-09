@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bytes"
 	"context"
 	"fiber/config"
 	"fiber/models"
@@ -11,12 +12,16 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/CloudyKit/jet/v6"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
+
+// Initialize Jet template engine
+var views = jet.NewSet(jet.NewOSFileSystemLoader("./views"), jet.InDevelopmentMode())
 
 func createToken(email string, userId primitive.ObjectID) (string, error) {
 	// Create JWT token
@@ -50,6 +55,18 @@ func Login(c *fiber.Ctx) error {
 	if err := c.BodyParser(&credentials); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input"})
 	}
+
+	// // First, try parsing JSON
+	// if err := c.BodyParser(&credentials); err != nil || credentials.Email == "" || credentials.Password == "" {
+	// 	// If parsing fails, try getting form values (for form-data submissions)
+	// 	credentials.Email = c.FormValue("email")
+	// 	credentials.Password = c.FormValue("password")
+
+	// 	// If form values are also empty, return an error
+	// 	if credentials.Email == "" || credentials.Password == "" {
+	// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Email and password are required"})
+	// 	}
+	// }
 
 	var user models.User
 	err := usersCollection.FindOne(ctx, bson.M{"email": credentials.Email}).Decode(&user)
@@ -121,4 +138,27 @@ func Register(c *fiber.Ctx) error {
 	}
 
 	return c.Status(201).JSON(user)
+}
+
+func LoginView(c *fiber.Ctx) error {
+	// Load the login template
+	tmpl, err := views.GetTemplate("login.jet")
+	if err != nil {
+		log.Println("Error loading template:", err)
+		return c.Status(fiber.StatusInternalServerError).SendString("Template not found")
+	}
+
+	// Create a buffer to store the rendered HTML
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, nil, nil)
+	if err != nil {
+		log.Println("Error executing template:", err)
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed to render template")
+	}
+
+	// Set the response content type to text/html
+	c.Set("Content-Type", "text/html")
+
+	// Send rendered HTML
+	return c.SendString(buf.String())
 }
