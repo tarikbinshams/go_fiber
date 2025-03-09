@@ -1,0 +1,35 @@
+# Go binaries
+/bin/
+/*.exe
+/*.out
+/*.test
+
+# Go modules
+/go.sum
+/go.mod
+
+# Vendor directory (if using vendoring)
+vendor/
+
+# IDE and editor settings
+.idea/
+/.vscode/
+
+# Mac OS specific files
+.DS_Store
+
+# Log files
+*.log
+
+# Build output
+build/
+
+# Coverage reports
+*.coverprofile
+
+# Temporary files
+*.tmp
+*.swp
+
+# Environment files
+.env
