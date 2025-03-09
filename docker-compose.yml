@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  # Go Fiber App
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go_fiber_app
+    ports:
+      - "3000:3000" # Map port 3000 on host to port 3000 on the container
+    environment:
+      - MONGO_URI=mongodb://mongo:27017 # MongoDB URI (for the app to connect to)
+    depends_on:
+      - mongo # Wait for MongoDB service to start before starting the app
+    networks:
+      - app-network
+
+  # MongoDB Service
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017" # Expose MongoDB port
+    volumes:
+      - mongo_data:/data/db # Persist MongoDB data in a volume
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+    driver: local
